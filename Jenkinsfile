@@ -1,4 +1,4 @@
-
+```groovy
 pipeline {
     agent any
 
@@ -16,19 +16,40 @@ pipeline {
 
         stage('Validate Docker Compose') {
             steps {
-                bat 'docker compose config --quiet'
+                withCredentials([
+                    string(
+                        credentialsId: 'login-app-db-password',
+                        variable: 'DB_PASSWORD'
+                    )
+                ]) {
+                    bat 'docker compose -p login-app config --quiet'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker compose build backend'
+                withCredentials([
+                    string(
+                        credentialsId: 'login-app-db-password',
+                        variable: 'DB_PASSWORD'
+                    )
+                ]) {
+                    bat 'docker compose -p login-app build backend'
+                }
             }
         }
 
         stage('Deploy Application') {
             steps {
-                bat 'docker compose up -d --build'
+                withCredentials([
+                    string(
+                        credentialsId: 'login-app-db-password',
+                        variable: 'DB_PASSWORD'
+                    )
+                ]) {
+                    bat 'docker compose -p login-app up -d --build'
+                }
             }
         }
 
@@ -48,3 +69,4 @@ pipeline {
         }
     }
 }
+```
